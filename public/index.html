@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="theme-color" content="#6c5ce7" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="회화한입" />
+    <title>회화한입 · 영어 회화 한입</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icons/icon-180.png" />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- ───────────── HOME ───────────── -->
+      <section id="screen-home" class="screen active">
+        <header class="app-bar">
+          <div class="brand">회화<span>한입</span> 🍱</div>
+          <button id="btn-profile" class="icon-btn" aria-label="프로필">👤</button>
+        </header>
+
+        <div class="hero-stats">
+          <div class="stat streak">
+            <div class="stat-emoji">🔥</div>
+            <div class="stat-num" id="stat-streak">0</div>
+            <div class="stat-label">연속</div>
+          </div>
+          <div class="level-card">
+            <div class="level-top">
+              <span id="level-emoji">🐣</span>
+              <span id="level-name">인턴 개그러</span>
+              <span class="level-badge">Lv.<b id="level-num">1</b></span>
+            </div>
+            <div class="xp-bar"><div class="xp-fill" id="xp-fill"></div></div>
+            <div class="xp-text"><span id="xp-now">0</span> XP · 다음까지 <span id="xp-tonext">100</span></div>
+          </div>
+        </div>
+
+        <div class="goal-ring-wrap">
+          <svg class="goal-ring" viewBox="0 0 120 120">
+            <circle class="ring-bg" cx="60" cy="60" r="52" />
+            <circle class="ring-fg" id="ring-fg" cx="60" cy="60" r="52" />
+          </svg>
+          <div class="goal-ring-center">
+            <div class="goal-count"><span id="today-count">0</span>/<span id="today-goal">10</span></div>
+            <div class="goal-sub">오늘 한입</div>
+          </div>
+        </div>
+
+        <button id="btn-start" class="cta">
+          <span class="cta-main">▶ 오늘의 한입 시작</span>
+          <span class="cta-sub" id="cta-sub">복습 0 · 신규 0 · 약 1분</span>
+        </button>
+
+        <div class="home-actions">
+          <button class="ghost-btn" id="btn-browse">📚 표현 둘러보기</button>
+          <button class="ghost-btn" id="btn-notify">🔔 알림 켜기</button>
+        </div>
+
+        <div class="cat-strip" id="cat-strip"></div>
+        <div class="install-hint" id="install-hint" hidden>
+          📲 홈 화면에 추가하면 앱처럼 쓸 수 있어요 <button id="btn-install">설치</button>
+        </div>
+      </section>
+
+      <!-- ───────────── SESSION ───────────── -->
+      <section id="screen-session" class="screen">
+        <header class="app-bar">
+          <button class="icon-btn" id="btn-quit">✕</button>
+          <div class="session-progress"><div id="session-bar"></div></div>
+          <div class="combo" id="combo-chip" hidden>⚡<span id="combo-num">0</span></div>
+        </header>
+
+        <div class="card-area" id="card-area"><!-- card injected --></div>
+      </section>
+
+      <!-- ───────────── DONE ───────────── -->
+      <section id="screen-done" class="screen">
+        <div class="done-wrap">
+          <div class="done-emoji">🎉</div>
+          <h2 id="done-title">한입 완료!</h2>
+          <p id="done-sub">잘했어요. 잊을 때쯤 또 알려줄게요.</p>
+          <div class="done-stats">
+            <div><b id="done-xp">+0</b><span>XP</span></div>
+            <div><b id="done-cards">0</b><span>카드</span></div>
+            <div><b id="done-streak">0</b><span>🔥연속</span></div>
+          </div>
+          <div id="done-achievements" class="done-achievements"></div>
+          <button class="cta" id="btn-done-home">홈으로</button>
+        </div>
+      </section>
+
+      <!-- ───────────── BROWSE ───────────── -->
+      <section id="screen-browse" class="screen">
+        <header class="app-bar">
+          <button class="icon-btn" id="btn-browse-back">←</button>
+          <div class="title">표현 둘러보기</div>
+          <div style="width: 40px"></div>
+        </header>
+        <div class="browse-list" id="browse-list"></div>
+      </section>
+
+      <!-- ───────────── PROFILE ───────────── -->
+      <section id="screen-profile" class="screen">
+        <header class="app-bar">
+          <button class="icon-btn" id="btn-profile-back">←</button>
+          <div class="title">내 프로필</div>
+          <div style="width: 40px"></div>
+        </header>
+        <div class="profile-body" id="profile-body"></div>
+      </section>
+    </div>
+
+    <div id="toast" class="toast" hidden></div>
+
+    <script src="js/data.js"></script>
+    <script src="js/srs.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/speech.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>

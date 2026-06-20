@@ -1,0 +1,22 @@
+{
+  "name": "englishstudy-pwa",
+  "version": "0.1.0",
+  "description": "Micro-learning English conversation PWA (comedy/politics/economy flavored) with SRS, gamification, and voice practice.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "english",
+    "pwa",
+    "srs",
+    "microlearning",
+    "speaking"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
