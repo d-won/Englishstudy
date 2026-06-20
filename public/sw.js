@@ -1,6 +1,6 @@
 /* Service worker: offline shell + notification handling.
  * Bump CACHE when you change cached assets. */
-const CACHE = 'hoehwa-hanip-v1';
+const CACHE = 'hoehwa-hanip-v2';
 const ASSETS = [
   './',
   './index.html',

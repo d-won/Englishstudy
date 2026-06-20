@@ -96,12 +96,37 @@ function renderCatStrip(g) {
 }
 
 // ----------------------------- SESSION -----------------------------
+// In mixed sessions, keep the focus on the learner's interests
+// (comedy/politics/economy) and let daily survival English be a minority.
+const INTEREST_CATS = ['comedy', 'politics', 'economy'];
+const MAX_DAILY_IN_MIX = 2;
+
 function buildQueue(catFilter) {
   let pool = DECK;
   if (catFilter) pool = DECK.filter((d) => d.cat === catFilter);
 
-  const due = SRS.getDueCards(pool).map((x) => x.card);
-  const fresh = SRS.getNewCards(pool);
+  let due = SRS.getDueCards(pool).map((x) => x.card);
+  let fresh = SRS.getNewCards(pool);
+
+  // Mixed mode: cap how many 'daily' cards can show up so interest topics lead.
+  if (!catFilter) {
+    const cap = (arr) => {
+      let dailyUsed = 0;
+      return arr.filter((c) => {
+        if (c.cat !== 'daily') return true;
+        if (dailyUsed < MAX_DAILY_IN_MIX) {
+          dailyUsed += 1;
+          return true;
+        }
+        return false;
+      });
+    };
+    // interests first within each list, then the (capped) daily cards
+    const byInterest = (a, b) =>
+      INTEREST_CATS.includes(b.cat) - INTEREST_CATS.includes(a.cat);
+    due = cap([...due].sort(byInterest));
+    fresh = cap([...fresh].sort(byInterest));
+  }
 
   // Interleave: prioritize due reviews, sprinkle in new cards.
   const queue = [];
