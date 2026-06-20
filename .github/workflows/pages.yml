@@ -1,0 +1,45 @@
+name: Deploy PWA to GitHub Pages
+
+# public/ 폴더(정적 PWA)를 GitHub Pages로 배포합니다.
+# 아이폰 사파리에서 https 주소로 바로 열고 "홈 화면에 추가"가 됩니다.
+
+on:
+  push:
+    branches:
+      - claude/english-conversation-pwa-a3ga99
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 동시에 한 번만 배포
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+        with:
+          # 저장소 설정에서 Pages를 안 켜놨어도 자동으로 활성화
+          enablement: true
+
+      - name: Upload static site (public/)
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
