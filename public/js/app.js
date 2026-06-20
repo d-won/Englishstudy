@@ -96,47 +96,40 @@ function renderCatStrip(g) {
 }
 
 // ----------------------------- SESSION -----------------------------
-// In mixed sessions, keep the focus on the learner's interests
-// (comedy/politics/economy) and let daily survival English be a minority.
-const INTEREST_CATS = ['comedy', 'politics', 'economy'];
-const MAX_DAILY_IN_MIX = 2;
+// Beginner speaking focus: lead with 기초(level 1) and sprinkle 중급(level 2),
+// roughly 3 basics to every 1 intermediate card.
+const BASICS_PER_INTER = 3;
 
 function buildQueue(catFilter) {
   let pool = DECK;
   if (catFilter) pool = DECK.filter((d) => d.cat === catFilter);
 
-  let due = SRS.getDueCards(pool).map((x) => x.card);
-  let fresh = SRS.getNewCards(pool);
+  const due = SRS.getDueCards(pool).map((x) => x.card);
+  const fresh = SRS.getNewCards(pool);
+  // Candidate order: review what's due first, then introduce new cards.
+  const ordered = [...due, ...fresh];
 
-  // Mixed mode: cap how many 'daily' cards can show up so interest topics lead.
-  if (!catFilter) {
-    const cap = (arr) => {
-      let dailyUsed = 0;
-      return arr.filter((c) => {
-        if (c.cat !== 'daily') return true;
-        if (dailyUsed < MAX_DAILY_IN_MIX) {
-          dailyUsed += 1;
-          return true;
-        }
-        return false;
-      });
-    };
-    // interests first within each list, then the (capped) daily cards
-    const byInterest = (a, b) =>
-      INTEREST_CATS.includes(b.cat) - INTEREST_CATS.includes(a.cat);
-    due = cap([...due].sort(byInterest));
-    fresh = cap([...fresh].sort(byInterest));
+  // Category-filtered session: just take them in order.
+  if (catFilter) {
+    const q = ordered.slice(0, SESSION_TARGET);
+    return q.length
+      ? q
+      : [...pool].sort(() => Math.random() - 0.5).slice(0, SESSION_TARGET);
   }
 
-  // Interleave: prioritize due reviews, sprinkle in new cards.
+  // Mixed session: interleave basics and intermediate by level.
+  const basics = ordered.filter((c) => c.level === 1);
+  const inter = ordered.filter((c) => c.level !== 1);
   const queue = [];
-  let di = 0;
-  let fi = 0;
-  while (queue.length < SESSION_TARGET && (di < due.length || fi < fresh.length)) {
-    if (di < due.length) queue.push(due[di++]);
-    if (queue.length < SESSION_TARGET && fi < fresh.length) queue.push(fresh[fi++]);
+  let bi = 0;
+  let ii = 0;
+  while (queue.length < SESSION_TARGET && (bi < basics.length || ii < inter.length)) {
+    for (let k = 0; k < BASICS_PER_INTER && bi < basics.length && queue.length < SESSION_TARGET; k++) {
+      queue.push(basics[bi++]);
+    }
+    if (ii < inter.length && queue.length < SESSION_TARGET) queue.push(inter[ii++]);
+    if (bi >= basics.length && ii >= inter.length) break;
   }
-  // If still short (everything reviewed & no new), just refresh random cards.
   if (queue.length === 0) {
     queue.push(...[...pool].sort(() => Math.random() - 0.5).slice(0, SESSION_TARGET));
   }
@@ -171,37 +164,64 @@ function renderCard() {
   }
 
   const cat = CATEGORIES[card.cat];
+  const levelTag =
+    card.level === 1
+      ? '<span class="lv-badge lv1">기초</span>'
+      : '<span class="lv-badge lv2">중급</span>';
+
+  // Drills (say-it-again variations) — the core of speaking practice.
+  const drillsHtml = (card.drills || [])
+    .map(
+      (d, i) => `
+      <div class="drill" data-i="${i}">
+        <div class="drill-text">
+          <div class="drill-en">${d.en}</div>
+          <div class="drill-ko">${d.ko}</div>
+        </div>
+        <button class="drill-play" data-say="${encodeURIComponent(d.en)}">🔊</button>
+      </div>`
+    )
+    .join('');
+
   const area = $('#card-area');
   area.innerHTML = `
     <div class="flashcard" id="flashcard" style="--c:${cat.color}">
-      <div class="card-cat">${cat.emoji} ${cat.label}</div>
+      <div class="card-cat">${cat.emoji} ${cat.label} ${levelTag}</div>
       <div class="card-situation">${card.situation}</div>
-      <div class="card-en">${card.en}</div>
+      <div class="card-en" id="card-en">${card.en}</div>
       <div class="card-ipa">${card.ipa || ''}</div>
-
-      <div class="card-back" id="card-back" hidden>
-        <div class="card-ko">${card.ko}</div>
-        <div class="card-example">
-          <div class="ex-en">“${card.ex_en}”</div>
-          <div class="ex-ko">${card.ex_ko}</div>
-        </div>
-        <div class="card-fun">💡 ${card.fun}</div>
-      </div>
+      <div class="card-ko-inline">${card.ko}</div>
 
       <div class="card-voice">
         <button class="voice-btn" id="btn-listen">🔊 듣기</button>
-        <button class="voice-btn" id="btn-speak">🎙️ 따라말하기</button>
+        <button class="voice-btn primary" id="btn-speak">🎙️ 따라 말하기</button>
       </div>
       <div class="speak-result" id="speak-result" hidden></div>
+      <button class="selfcheck-btn" id="btn-self">✅ 소리 내어 말했어요</button>
 
-      <button class="reveal-btn" id="btn-reveal">뜻 보기 👀</button>
+      ${
+        drillsHtml
+          ? `<div class="drills-wrap">
+               <div class="drills-title">🔁 단어만 바꿔서 말해보기</div>
+               ${drillsHtml}
+             </div>`
+          : ''
+      }
+
+      <details class="card-tip">
+        <summary>💡 팁 · 예문</summary>
+        <div class="ex-en">“${card.ex_en}”</div>
+        <div class="ex-ko">${card.ex_ko}</div>
+        <div class="card-fun">${card.fun}</div>
+      </details>
     </div>
 
+    <div class="grade-prompt" id="grade-prompt" hidden>방금 얼마나 잘 말했나요?</div>
     <div class="grade-row" id="grade-row" hidden>
-      <button class="grade again" data-g="again">😵 다시</button>
-      <button class="grade hard" data-g="hard">😣 어려움</button>
-      <button class="grade good" data-g="good">🙂 알맞음</button>
-      <button class="grade easy" data-g="easy">😎 쉬움</button>
+      <button class="grade again" data-g="again">😵 못했어</button>
+      <button class="grade hard" data-g="hard">😣 더듬더듬</button>
+      <button class="grade good" data-g="good">🙂 말했어</button>
+      <button class="grade easy" data-g="easy">😎 술술</button>
     </div>
   `;
 
@@ -213,22 +233,28 @@ function renderCard() {
     Speech.speak(card.en);
   });
   $('#btn-speak').addEventListener('click', () => doSpeak(card));
-  $('#btn-reveal').addEventListener('click', reveal);
-  $('#flashcard').addEventListener('click', (e) => {
-    if (e.target.closest('button')) return;
-    if (!state.flipped) reveal();
+  $('#btn-self').addEventListener('click', () => {
+    state.spokeThisCard = true;
+    haptic();
+    revealGrade();
   });
+  $('#card-en').addEventListener('click', () => Speech.speak(card.en));
+  $$('#card-area .drill-play').forEach((b) =>
+    b.addEventListener('click', () => {
+      haptic();
+      Speech.speak(decodeURIComponent(b.dataset.say));
+    })
+  );
   $$('#grade-row .grade').forEach((b) =>
     b.addEventListener('click', () => gradeCard(card, b.dataset.g))
   );
 }
 
-function reveal() {
-  if (state.flipped) return;
-  state.flipped = true;
-  $('#card-back').hidden = false;
-  $('#btn-reveal').hidden = true;
+// Reveal the self-assessment buttons once the learner has practiced speaking.
+function revealGrade() {
+  $('#grade-prompt').hidden = false;
   $('#grade-row').hidden = false;
+  $('#grade-row').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 async function doSpeak(card) {
@@ -236,7 +262,9 @@ async function doSpeak(card) {
   if (!Speech.sttSupported()) {
     resEl.hidden = false;
     resEl.className = 'speak-result warn';
-    resEl.textContent = '이 브라우저는 음성 인식을 지원하지 않아요 (Chrome/Safari 권장). 듣기만 이용하세요.';
+    resEl.textContent =
+      '이 기기는 자동 채점(음성 인식)이 안 돼요. 🔊 듣고 소리 내어 따라 말한 뒤, 아래 "말했어요"를 누르세요!';
+    revealGrade();
     return;
   }
   const btn = $('#btn-speak');
@@ -263,6 +291,7 @@ async function doSpeak(card) {
         : '⚠️ 음성 인식 오류 (마이크 권한을 허용했나요?)';
   } finally {
     btn.classList.remove('listening');
+    revealGrade();
   }
 }
 

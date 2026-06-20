@@ -11,13 +11,17 @@
  *   ex_en     example sentence in context
  *   ex_ko     translation of the example
  *   fun       a witty one-liner / usage note to make it stick (재미 요소)
+ *   level     1 = 기초(beginner core pattern), 2 = 중급(idioms). Default 2.
+ *   drills    optional [{en, ko}] — say-it-again variations of the same
+ *             pattern, the heart of speaking practice for beginners.
  *
- * Themes are intentionally weighted toward the learner's interests:
- * comedy, politics/current-affairs, and economy/business — plus the
- * everyday survival situations from the MVP spec.
+ * Beginners build fluency by SPEAKING high-frequency sentence patterns and
+ * swapping the words — so the 'core' (기초 회화) cards come with drills.
+ * Interest themes (comedy/politics/economy) appear at both levels.
  */
 
 const CATEGORIES = {
+  core: { label: '기초 회화', emoji: '🧱', color: '#00b8a9' },
   comedy: { label: '코미디 / 유머', emoji: '🎤', color: '#ff6b9d' },
   politics: { label: '정치 / 시사', emoji: '🏛️', color: '#5b8def' },
   economy: { label: '경제 / 비즈니스', emoji: '📈', color: '#2ecc71' },
@@ -25,6 +29,354 @@ const CATEGORIES = {
 };
 
 const DECK = [
+  // ════════════ 기초 회화 (LEVEL 1) — 패턴 + 바꿔 말하기 드릴 ════════════
+  {
+    id: 'b1', cat: 'core', level: 1,
+    situation: '뭔가 원할 때 — "I want ~"',
+    en: 'I want some water.',
+    ko: '물 좀 주세요.',
+    ipa: '아이 원트 썸 워터',
+    ex_en: 'I want some water, please.',
+    ex_ko: '물 좀 주세요.',
+    fun: '"I want + 명사/to+동사"로 원하는 걸 다 말해요. 가장 기본 뼈대!',
+    drills: [
+      { en: 'I want to go home.', ko: '집에 가고 싶어요.' },
+      { en: 'I want to learn English.', ko: '영어를 배우고 싶어요.' },
+      { en: 'I want to try it.', ko: '한번 해보고 싶어요.' },
+    ],
+  },
+  {
+    id: 'b2', cat: 'core', level: 1,
+    situation: '공손하게 원할 때 — "I\'d like ~"',
+    en: "I'd like a coffee, please.",
+    ko: '커피 한 잔 주세요.',
+    ipa: '아이드 라이크 어 커피 플리즈',
+    ex_en: "I'd like to order, please.",
+    ex_ko: '주문할게요.',
+    fun: '"I\'d like"는 "I want"의 공손 버전. 가게·식당에서 안전빵.',
+    drills: [
+      { en: "I'd like to order, please.", ko: '주문할게요.' },
+      { en: "I'd like the check, please.", ko: '계산서 주세요.' },
+      { en: "I'd like to ask something.", ko: '뭐 좀 여쭤볼게요.' },
+    ],
+  },
+  {
+    id: 'b3', cat: 'core', level: 1,
+    situation: '허락·부탁할 때 — "Can I ~?"',
+    en: 'Can I get a coffee?',
+    ko: '커피 하나 주시겠어요?',
+    ipa: '캔 아이 겟 어 커피',
+    ex_en: 'Can I sit here?',
+    ex_ko: '여기 앉아도 될까요?',
+    fun: '"Can I ~?"로 "~해도 돼요? / ~ 주세요"를 다 해결. 회화 만능키.',
+    drills: [
+      { en: 'Can I sit here?', ko: '여기 앉아도 돼요?' },
+      { en: 'Can I ask you something?', ko: '뭐 좀 물어봐도 돼요?' },
+      { en: 'Can I pay by card?', ko: '카드로 계산해도 돼요?' },
+    ],
+  },
+  {
+    id: 'b4', cat: 'core', level: 1,
+    situation: '남에게 부탁할 때 — "Can you ~?"',
+    en: 'Can you help me?',
+    ko: '도와주실 수 있어요?',
+    ipa: '캔 유 헬프 미',
+    ex_en: 'Can you wait a second?',
+    ex_ko: '잠깐만 기다려 주실래요?',
+    fun: '"Can you ~?"는 상대에게 부탁. "Can I ~?"(나)와 짝으로 외우면 끝.',
+    drills: [
+      { en: 'Can you wait a second?', ko: '잠깐만 기다려 줄래요?' },
+      { en: 'Can you say that again?', ko: '다시 말해 줄래요?' },
+      { en: 'Can you take a photo for me?', ko: '사진 좀 찍어 줄래요?' },
+    ],
+  },
+  {
+    id: 'b5', cat: 'core', level: 1,
+    situation: '못 알아들었을 때 — "Could you ~?"',
+    en: 'Could you speak slowly, please?',
+    ko: '천천히 말씀해 주시겠어요?',
+    ipa: '쿠쥬 스피크 슬로울리 플리즈',
+    ex_en: 'Could you say that again, please?',
+    ex_ko: '다시 한 번 말씀해 주시겠어요?',
+    fun: '초보 생존 1순위! 못 알아들으면 당황 말고 이걸 외워서 던지세요.',
+    drills: [
+      { en: 'Could you say that again?', ko: '다시 말씀해 주시겠어요?' },
+      { en: 'Could you write it down?', ko: '적어 주시겠어요?' },
+      { en: 'Could you help me, please?', ko: '좀 도와주시겠어요?' },
+    ],
+  },
+  {
+    id: 'b6', cat: 'core', level: 1,
+    situation: '지금 하는 중 — "I\'m ~ing"',
+    en: "I'm learning English.",
+    ko: '저 영어 배우고 있어요.',
+    ipa: '아임 러닝 잉글리시',
+    ex_en: "I'm looking for the station.",
+    ex_ko: '역을 찾고 있어요.',
+    fun: '"I\'m + 동사ing" = 지금 ~하는 중. 자기 상황 설명의 기본.',
+    drills: [
+      { en: "I'm looking for the station.", ko: '역을 찾고 있어요.' },
+      { en: "I'm waiting for a friend.", ko: '친구를 기다리는 중이에요.' },
+      { en: "I'm just looking, thanks.", ko: '그냥 둘러보는 거예요, 감사해요.' },
+    ],
+  },
+  {
+    id: 'b7', cat: 'core', level: 1,
+    situation: '~할 계획 — "I\'m going to ~"',
+    en: "I'm going to study tonight.",
+    ko: '오늘 밤에 공부할 거예요.',
+    ipa: '아임 고잉 투 스터디 투나잇',
+    ex_en: "I'm going to call him later.",
+    ex_ko: '이따 그에게 전화할 거예요.',
+    fun: '"be going to + 동사" = ~할 거예요(계획). will보다 회화에서 더 흔해요.',
+    drills: [
+      { en: "I'm going to call him later.", ko: '이따 전화할 거예요.' },
+      { en: "I'm going to take a break.", ko: '잠깐 쉴 거예요.' },
+      { en: 'What are you going to do?', ko: '뭐 할 거예요?' },
+    ],
+  },
+  {
+    id: 'b8', cat: 'core', level: 1,
+    situation: '~해야 해 — "I have to / I need to"',
+    en: 'I have to go now.',
+    ko: '저 이제 가봐야 해요.',
+    ipa: '아이 해브 투 고 나우',
+    ex_en: 'I need to practice more.',
+    ex_ko: '연습을 더 해야 해요.',
+    fun: '"have to / need to + 동사" = ~해야 한다. 의무·필요를 말할 때.',
+    drills: [
+      { en: 'I need to leave now.', ko: '이제 가야 해요.' },
+      { en: 'I have to finish this.', ko: '이거 끝내야 해요.' },
+      { en: 'You need to rest.', ko: '당신은 좀 쉬어야 해요.' },
+    ],
+  },
+  {
+    id: 'b9', cat: 'core', level: 1,
+    situation: '있는지 물을 때 — "Do you have ~?"',
+    en: 'Do you have a minute?',
+    ko: '잠깐 시간 있으세요?',
+    ipa: '두 유 해브 어 미닛',
+    ex_en: 'Do you have a charger?',
+    ex_ko: '충전기 있으세요?',
+    fun: '"Do you have ~?"로 물건·시간 유무를 물어요. 여행·일상 단골.',
+    drills: [
+      { en: 'Do you have a charger?', ko: '충전기 있어요?' },
+      { en: 'Do you have a menu?', ko: '메뉴판 있어요?' },
+      { en: 'Do you have any questions?', ko: '질문 있어요?' },
+    ],
+  },
+  {
+    id: 'b10', cat: 'core', level: 1,
+    situation: '위치를 물을 때 — "Where is ~?"',
+    en: 'Where is the bathroom?',
+    ko: '화장실이 어디예요?',
+    ipa: '웨어 이즈 더 배쓰룸',
+    ex_en: 'Where is the station?',
+    ex_ko: '역이 어디예요?',
+    fun: '"Where is ~?"로 위치를 물어요. 길찾기·여행 필수.',
+    drills: [
+      { en: 'Where is the station?', ko: '역이 어디예요?' },
+      { en: 'Where is the exit?', ko: '출구가 어디예요?' },
+      { en: 'Where can I buy a ticket?', ko: '표는 어디서 사요?' },
+    ],
+  },
+  {
+    id: 'b11', cat: 'core', level: 1,
+    situation: '가격을 물을 때 — "How much ~?"',
+    en: 'How much is this?',
+    ko: '이거 얼마예요?',
+    ipa: '하우 머치 이즈 디스',
+    ex_en: 'How much is the ticket?',
+    ex_ko: '표가 얼마예요?',
+    fun: '"How much is ~?" = 얼마예요? 쇼핑·여행에서 매일 써요.',
+    drills: [
+      { en: 'How much is the ticket?', ko: '표가 얼마예요?' },
+      { en: 'How much is it in total?', ko: '전부 얼마예요?' },
+      { en: 'How much do I owe you?', ko: '얼마 드리면 돼요?' },
+    ],
+  },
+  {
+    id: 'b12', cat: 'core', level: 1,
+    situation: '내 생각 말할 때 — "I think ~"',
+    en: 'I think so.',
+    ko: '그런 것 같아요.',
+    ipa: '아이 띵크 쏘',
+    ex_en: 'I think it\'s a good idea.',
+    ex_ko: '좋은 생각인 것 같아요.',
+    fun: '"I think ~"로 부드럽게 의견 표현. 확신 없을 땐 이걸 앞에 붙이세요.',
+    drills: [
+      { en: "I think it's a good idea.", ko: '좋은 생각인 것 같아요.' },
+      { en: "I don't think so.", ko: '아닌 것 같아요.' },
+      { en: 'I think you\'re right.', ko: '당신 말이 맞는 것 같아요.' },
+    ],
+  },
+  {
+    id: 'b13', cat: 'core', level: 1,
+    situation: '좋고 싫음 — "I like / I don\'t like"',
+    en: 'I like coffee.',
+    ko: '저 커피 좋아해요.',
+    ipa: '아이 라이크 커피',
+    ex_en: 'I like watching movies.',
+    ex_ko: '영화 보는 거 좋아해요.',
+    fun: '"I like + 명사/동사ing"로 취향을 말해요. 자기소개 단골.',
+    drills: [
+      { en: 'I like watching movies.', ko: '영화 보는 거 좋아해요.' },
+      { en: "I don't like spicy food.", ko: '매운 음식은 안 좋아해요.' },
+      { en: 'I really like this song.', ko: '이 노래 정말 좋아해요.' },
+    ],
+  },
+  {
+    id: 'b14', cat: 'core', level: 1,
+    situation: '같이 하자 — "Let\'s ~"',
+    en: "Let's go.",
+    ko: '가자 / 가시죠.',
+    ipa: '렛츠 고',
+    ex_en: "Let's eat something.",
+    ex_ko: '뭐 좀 먹자.',
+    fun: '"Let\'s + 동사" = ~하자. 제안할 때 가장 짧고 강력.',
+    drills: [
+      { en: "Let's eat something.", ko: '뭐 좀 먹자.' },
+      { en: "Let's talk later.", ko: '나중에 얘기하자.' },
+      { en: "Let's take a break.", ko: '잠깐 쉬자.' },
+    ],
+  },
+  {
+    id: 'b15', cat: 'core', level: 1,
+    situation: '제안·되묻기 — "How about ~?"',
+    en: 'How about tomorrow?',
+    ko: '내일은 어때요?',
+    ipa: '하우 어바웃 투모로우',
+    ex_en: 'How about you?',
+    ex_ko: '당신은요?',
+    fun: '"How about ~?"로 제안하거나 상대에게 되물어요. 대화 이어가기 꿀.',
+    drills: [
+      { en: 'How about you?', ko: '당신은요?' },
+      { en: 'How about some coffee?', ko: '커피 한잔 어때요?' },
+      { en: 'How about this one?', ko: '이건 어때요?' },
+    ],
+  },
+  {
+    id: 'b16', cat: 'core', level: 1,
+    situation: '확실치 않을 때 — "I\'m not sure"',
+    en: "I'm not sure.",
+    ko: '잘 모르겠어요 / 확실치 않아요.',
+    ipa: '아임 낫 슈어',
+    ex_en: "I'm not sure what you mean.",
+    ex_ko: '무슨 말인지 잘 모르겠어요.',
+    fun: '몰라서 막힐 때 "음..." 대신 이 문장. 시간도 벌고 자연스러워요.',
+    drills: [
+      { en: "I'm not sure what you mean.", ko: '무슨 말인지 모르겠어요.' },
+      { en: "I'm not sure about that.", ko: '그건 잘 모르겠어요.' },
+      { en: "I'm not sure yet.", ko: '아직 잘 모르겠어요.' },
+    ],
+  },
+  {
+    id: 'b17', cat: 'core', level: 1,
+    situation: '되물을 때 — "What do you ~?"',
+    en: 'What do you think?',
+    ko: '어떻게 생각해요?',
+    ipa: '왓 두 유 띵크',
+    ex_en: 'What do you mean?',
+    ex_ko: '무슨 뜻이에요?',
+    fun: '"What do you think/mean/do?" 세 개면 대화가 안 끊겨요.',
+    drills: [
+      { en: 'What do you mean?', ko: '무슨 뜻이에요?' },
+      { en: 'What do you do?', ko: '무슨 일 하세요?' },
+      { en: 'What do you want to do?', ko: '뭐 하고 싶어요?' },
+    ],
+  },
+  {
+    id: 'b18', cat: 'core', level: 1,
+    situation: '사과·양해 — "Sorry, I ~"',
+    en: "Sorry, I'm late.",
+    ko: '늦어서 죄송해요.',
+    ipa: '쏘리, 아임 레이트',
+    ex_en: "Sorry, I didn't catch that.",
+    ex_ko: '죄송해요, 못 알아들었어요.',
+    fun: '"Sorry, I ~"로 가볍게 사과. didn\'t catch that = 못 알아들었다.',
+    drills: [
+      { en: "Sorry, I didn't catch that.", ko: '죄송해요, 못 들었어요.' },
+      { en: "Sorry, I don't understand.", ko: '죄송해요, 이해를 못 했어요.' },
+      { en: "Sorry to bother you.", ko: '귀찮게 해서 죄송해요.' },
+    ],
+  },
+  {
+    id: 'b19', cat: 'core', level: 1,
+    situation: '감사 표현 — "Thank you for ~"',
+    en: 'Thank you for your help.',
+    ko: '도와주셔서 감사해요.',
+    ipa: '땡큐 포 유어 헬프',
+    ex_en: 'Thank you for waiting.',
+    ex_ko: '기다려 주셔서 감사해요.',
+    fun: '"Thank you for + 명사/동사ing"로 구체적으로 감사. 인상이 확 좋아져요.',
+    drills: [
+      { en: 'Thank you for waiting.', ko: '기다려 주셔서 감사해요.' },
+      { en: 'Thank you for coming.', ko: '와 주셔서 감사해요.' },
+      { en: 'Thank you for letting me know.', ko: '알려 주셔서 감사해요.' },
+    ],
+  },
+  {
+    id: 'b20', cat: 'core', level: 1,
+    situation: '상태·평가 — "It\'s ~"',
+    en: "It's really good.",
+    ko: '이거 정말 좋아요(맛있어요).',
+    ipa: '잇츠 리얼리 굿',
+    ex_en: "It's too expensive.",
+    ex_ko: '너무 비싸요.',
+    fun: '"It\'s + 형용사"로 짧게 평가. okay / great / too expensive 등.',
+    drills: [
+      { en: "It's too expensive.", ko: '너무 비싸요.' },
+      { en: "It's okay.", ko: '괜찮아요.' },
+      { en: "It's not a big deal.", ko: '별일 아니에요.' },
+    ],
+  },
+  // 관심사를 '기초 레벨'로 가볍게 — 말할 수 있는 짧은 문장
+  {
+    id: 'b21', cat: 'comedy', level: 1,
+    situation: '취향 말하기 — 코미디',
+    en: 'I like watching comedy shows.',
+    ko: '저 코미디 프로 보는 거 좋아해요.',
+    ipa: '아이 라이크 와칭 코미디 쇼우즈',
+    ex_en: 'It was really funny.',
+    ex_ko: '진짜 웃겼어요.',
+    fun: '관심사부터 말 트기! funny(웃긴), hilarious(엄청 웃긴) 같이 외워요.',
+    drills: [
+      { en: 'It was really funny.', ko: '진짜 웃겼어요.' },
+      { en: 'That was hilarious.', ko: '완전 웃겼어요.' },
+      { en: 'It made me laugh.', ko: '웃음이 났어요.' },
+    ],
+  },
+  {
+    id: 'b22', cat: 'politics', level: 1,
+    situation: '관심사 말하기 — 시사',
+    en: "I'm interested in the news.",
+    ko: '저 시사(뉴스)에 관심 있어요.',
+    ipa: '아임 인터레스티드 인 더 뉴스',
+    ex_en: 'I read the news every day.',
+    ex_ko: '매일 뉴스를 읽어요.',
+    fun: '"be interested in ~"로 관심사 말하기. 대화 물꼬 트는 문장.',
+    drills: [
+      { en: 'I read the news every day.', ko: '매일 뉴스를 읽어요.' },
+      { en: 'What do you think about it?', ko: '그거 어떻게 생각해요?' },
+      { en: 'I follow politics a little.', ko: '정치를 조금 챙겨봐요.' },
+    ],
+  },
+  {
+    id: 'b23', cat: 'economy', level: 1,
+    situation: '관심사 말하기 — 경제(생활)',
+    en: 'Everything is so expensive.',
+    ko: '다 너무 비싸요.',
+    ipa: '에브리띵 이즈 쏘 익스펜시브',
+    ex_en: 'Prices keep going up.',
+    ex_ko: '물가가 계속 올라요.',
+    fun: '거창한 경제용어 전에, 체감 물가부터 말해보기. 공감 100%.',
+    drills: [
+      { en: 'Prices keep going up.', ko: '물가가 계속 올라요.' },
+      { en: "I'm trying to save money.", ko: '돈을 아끼려고 해요.' },
+      { en: "It's hard to save these days.", ko: '요즘 저축하기 힘들어요.' },
+    ],
+  },
+
   // ───────────────────────── COMEDY / 유머 ─────────────────────────
   {
     id: 'c1',
@@ -520,6 +872,11 @@ const DECK = [
     fun: 'What? 보다 훨씬 공손. 회화 생존 1순위 문장.',
   },
 ];
+
+// Default any card without an explicit level to 중급(2).
+DECK.forEach((c) => {
+  if (!c.level) c.level = 2;
+});
 
 // Expose globally (no bundler in MVP).
 window.CATEGORIES = CATEGORIES;
