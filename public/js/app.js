@@ -147,111 +147,256 @@ function startSession(catFilter) {
   renderCard();
 }
 
-function renderCard() {
-  const card = state.queue[state.idx];
-  state.flipped = false;
-  state.spokeThisCard = false;
-
-  // progress + combo
-  $('#session-bar').style.width =
-    Math.round((state.idx / state.queue.length) * 100) + '%';
-  const comboChip = $('#combo-chip');
-  if (state.combo >= 2) {
-    comboChip.hidden = false;
-    $('#combo-num').textContent = state.combo;
-  } else {
-    comboChip.hidden = true;
-  }
-
+// ── exercise engine ──────────────────────────────────────────────────────
+// Evidence-based: spacing (SRS) + RETRIEVAL PRACTICE (testing effect) with
+// immediate FEEDBACK and MULTIMODAL input/output. New cards are taught first
+// (comprehensible input); seen cards are tested via varied retrieval activities
+// to keep recall effortful (desirable difficulty) and the session fresh.
+function shuffle(arr) {
+  return arr
+    .map((x) => [Math.random(), x])
+    .sort((a, b) => a[0] - b[0])
+    .map((x) => x[1]);
+}
+function enWords(card) {
+  return card.en
+    .replace(/[^A-Za-z0-9'\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .split(' ')
+    .filter(Boolean);
+}
+function distractors(card, n) {
+  const pool = DECK.filter((d) => d.id !== card.id && d.ko !== card.ko);
+  return shuffle(pool).slice(0, n).map((d) => d.ko);
+}
+function cardHeader(card) {
   const cat = CATEGORIES[card.cat];
-  const levelTag =
+  const lv =
     card.level === 1
       ? '<span class="lv-badge lv1">기초</span>'
       : '<span class="lv-badge lv2">중급</span>';
+  return `<div class="card-cat">${cat.emoji} ${cat.label} ${lv}</div>
+          <div class="card-situation">${card.situation}</div>`;
+}
+function gradeRowHtml(prompt) {
+  return `
+    <div class="grade-prompt" id="grade-prompt" hidden>${prompt}</div>
+    <div class="grade-row" id="grade-row" hidden>
+      <button class="grade again" data-g="again">😵 못함</button>
+      <button class="grade hard" data-g="hard">😣 가물</button>
+      <button class="grade good" data-g="good">🙂 됐어</button>
+      <button class="grade easy" data-g="easy">😎 쉬움</button>
+    </div>`;
+}
+function bindGradeRow(card) {
+  $$('#grade-row .grade').forEach((b) =>
+    b.addEventListener('click', () => gradeCard(card, b.dataset.g))
+  );
+}
+function updateProgressCombo() {
+  $('#session-bar').style.width =
+    Math.round((state.idx / state.queue.length) * 100) + '%';
+  const chip = $('#combo-chip');
+  if (state.combo >= 2) {
+    chip.hidden = false;
+    $('#combo-num').textContent = state.combo;
+  } else chip.hidden = true;
+}
 
-  // Drills (say-it-again variations) — the core of speaking practice.
+function chooseExercise(card) {
+  const seen = !!SRS.loadSrs()[card.id];
+  if (!seen) return 'teach'; // first exposure → teach (can't retrieve the unseen)
+  const pool = ['recall', 'listen'];
+  const wc = enWords(card).length;
+  if (wc >= 3 && wc <= 7) pool.push('wordbank');
+  const st = SRS.getCardState(card.id);
+  return pool[(st.reps + state.idx) % pool.length];
+}
+
+function renderCard() {
+  const card = state.queue[state.idx];
+  state.spokeThisCard = false;
+  updateProgressCombo();
+  const type = chooseExercise(card);
+  ({
+    teach: renderTeach,
+    recall: renderRecall,
+    listen: renderListen,
+    wordbank: renderWordbank,
+  }[type])(card);
+}
+
+// 1) TEACH — full info + listen + shadow (input + scaffolded output). New cards.
+function renderTeach(card) {
+  const cat = CATEGORIES[card.cat];
   const drillsHtml = (card.drills || [])
     .map(
-      (d, i) => `
-      <div class="drill" data-i="${i}">
-        <div class="drill-text">
-          <div class="drill-en">${d.en}</div>
-          <div class="drill-ko">${d.ko}</div>
-        </div>
+      (d) => `
+      <div class="drill">
+        <div class="drill-text"><div class="drill-en">${d.en}</div><div class="drill-ko">${d.ko}</div></div>
         <button class="drill-play" data-say="${encodeURIComponent(d.en)}">🔊</button>
       </div>`
     )
     .join('');
 
-  const area = $('#card-area');
-  area.innerHTML = `
-    <div class="flashcard" id="flashcard" style="--c:${cat.color}">
-      <div class="card-cat">${cat.emoji} ${cat.label} ${levelTag}</div>
-      <div class="card-situation">${card.situation}</div>
+  $('#card-area').innerHTML = `
+    <div class="flashcard" style="--c:${cat.color}">
+      <div class="ex-tag">🆕 새 표현 — 듣고 따라 말해요</div>
+      ${cardHeader(card)}
       <div class="card-en" id="card-en">${card.en}</div>
       <div class="card-ipa">${card.ipa || ''}</div>
       <div class="card-ko-inline">${card.ko}</div>
-
       <div class="card-voice">
         <button class="voice-btn" id="btn-listen">🔊 듣기</button>
         <button class="voice-btn primary" id="btn-speak">🎙️ 따라 말하기</button>
       </div>
       <div class="speak-result" id="speak-result" hidden></div>
       <button class="selfcheck-btn" id="btn-self">✅ 소리 내어 말했어요</button>
-
-      ${
-        drillsHtml
-          ? `<div class="drills-wrap">
-               <div class="drills-title">🔁 단어만 바꿔서 말해보기</div>
-               ${drillsHtml}
-             </div>`
-          : ''
-      }
-
-      <details class="card-tip">
-        <summary>💡 팁 · 예문</summary>
-        <div class="ex-en">“${card.ex_en}”</div>
-        <div class="ex-ko">${card.ex_ko}</div>
+      ${drillsHtml ? `<div class="drills-wrap"><div class="drills-title">🔁 단어만 바꿔서 말해보기</div>${drillsHtml}</div>` : ''}
+      <details class="card-tip"><summary>💡 팁 · 예문</summary>
+        <div class="ex-en">“${card.ex_en}”</div><div class="ex-ko">${card.ex_ko}</div>
         <div class="card-fun">${card.fun}</div>
       </details>
     </div>
+    ${gradeRowHtml('방금 얼마나 잘 말했나요?')}`;
 
-    <div class="grade-prompt" id="grade-prompt" hidden>방금 얼마나 잘 말했나요?</div>
-    <div class="grade-row" id="grade-row" hidden>
-      <button class="grade again" data-g="again">😵 못했어</button>
-      <button class="grade hard" data-g="hard">😣 더듬더듬</button>
-      <button class="grade good" data-g="good">🙂 말했어</button>
-      <button class="grade easy" data-g="easy">😎 술술</button>
-    </div>
-  `;
-
-  // auto-pronounce on appearance (gentle)
   Speech.speak(card.en);
-
-  $('#btn-listen').addEventListener('click', () => {
-    haptic();
-    Speech.speak(card.en);
-  });
+  $('#btn-listen').addEventListener('click', () => { haptic(); Speech.speak(card.en); });
   $('#btn-speak').addEventListener('click', () => doSpeak(card));
-  $('#btn-self').addEventListener('click', () => {
-    state.spokeThisCard = true;
-    haptic();
-    revealGrade();
-  });
+  $('#btn-self').addEventListener('click', () => { state.spokeThisCard = true; haptic(); revealGrade(); });
   $('#card-en').addEventListener('click', () => Speech.speak(card.en));
   $$('#card-area .drill-play').forEach((b) =>
-    b.addEventListener('click', () => {
-      haptic();
-      Speech.speak(decodeURIComponent(b.dataset.say));
-    })
+    b.addEventListener('click', () => { haptic(); Speech.speak(decodeURIComponent(b.dataset.say)); })
   );
-  $$('#grade-row .grade').forEach((b) =>
-    b.addEventListener('click', () => gradeCard(card, b.dataset.g))
+  bindGradeRow(card);
+}
+
+// 2) RECALL (KO→EN) — produce from memory before seeing the answer (testing
+//    effect + output hypothesis). Then self-grade how well you recalled.
+function renderRecall(card) {
+  const cat = CATEGORIES[card.cat];
+  $('#card-area').innerHTML = `
+    <div class="flashcard" style="--c:${cat.color}">
+      <div class="ex-tag">🧠 영어로 말해보기 (먼저 떠올려요!)</div>
+      ${cardHeader(card)}
+      <div class="recall-q">${card.ko}</div>
+      <div class="recall-hint">소리 내어 영어로 말해본 뒤 정답을 확인하세요.</div>
+      <div class="card-voice">
+        <button class="voice-btn primary" id="btn-speak">🎙️ 영어로 말해보기</button>
+        <button class="voice-btn" id="btn-reveal">👀 정답 확인</button>
+      </div>
+      <div class="speak-result" id="speak-result" hidden></div>
+      <div id="hidden-answer" hidden>
+        <div class="card-en" id="card-en">${card.en}</div>
+        <div class="card-ipa">${card.ipa || ''}</div>
+        <button class="voice-btn" id="btn-listen">🔊 듣기</button>
+      </div>
+    </div>
+    ${gradeRowHtml('얼마나 잘 떠올렸나요?')}`;
+
+  $('#btn-speak').addEventListener('click', () => doSpeak(card));
+  $('#btn-reveal').addEventListener('click', () => { revealGrade(); Speech.speak(card.en); });
+  $('#btn-listen')?.addEventListener('click', () => Speech.speak(card.en));
+  bindGradeRow(card);
+}
+
+// 3) LISTEN (EN→KO) — comprehensible input + low-anxiety retrieval with
+//    immediate feedback. Hear it, pick the meaning.
+function renderListen(card) {
+  const cat = CATEGORIES[card.cat];
+  const opts = shuffle([card.ko, ...distractors(card, 2)]);
+  $('#card-area').innerHTML = `
+    <div class="flashcard" style="--c:${cat.color}">
+      <div class="ex-tag">🎧 잘 듣고 뜻을 고르세요</div>
+      <button class="voice-btn primary listen-big" id="btn-listen">🔊 다시 듣기</button>
+      <div class="opts" id="opts">
+        ${opts.map((o) => `<button class="opt" data-ko="${encodeURIComponent(o)}">${o}</button>`).join('')}
+      </div>
+      <div class="ex-feedback" id="ex-fb" hidden></div>
+    </div>
+    <div id="continue-wrap" hidden><button class="reveal-btn" id="btn-continue">계속 →</button></div>`;
+
+  setTimeout(() => Speech.speak(card.en), 250);
+  $('#btn-listen').addEventListener('click', () => { haptic(); Speech.speak(card.en); });
+  $$('#opts .opt').forEach((b) =>
+    b.addEventListener('click', () => {
+      if (b.dataset.done) return;
+      const correct = decodeURIComponent(b.dataset.ko) === card.ko;
+      $$('#opts .opt').forEach((o) => {
+        o.dataset.done = '1';
+        if (decodeURIComponent(o.dataset.ko) === card.ko) o.classList.add('correct');
+        else if (o === b) o.classList.add('wrong');
+      });
+      objectiveFeedback(card, correct);
+    })
   );
 }
 
-// Reveal the self-assessment buttons once the learner has practiced speaking.
+// 4) WORDBANK — reconstruct the sentence (scaffolded output, focus on form,
+//    lower affective filter than free production).
+function renderWordbank(card) {
+  const cat = CATEGORIES[card.cat];
+  const target = enWords(card);
+  let bank = shuffle(target.slice());
+  let ans = [];
+
+  $('#card-area').innerHTML = `
+    <div class="flashcard" style="--c:${cat.color}">
+      <div class="ex-tag">🧩 단어를 순서대로 배열하세요</div>
+      <div class="wb-ko">${card.ko}</div>
+      <div class="wb-answer" id="wb-answer"></div>
+      <div class="wb-bank" id="wb-bank"></div>
+      <div class="ex-feedback" id="ex-fb" hidden></div>
+      <button class="reveal-btn" id="wb-check" disabled>확인</button>
+    </div>
+    <div id="continue-wrap" hidden><button class="reveal-btn" id="btn-continue">계속 →</button></div>`;
+
+  function draw() {
+    $('#wb-answer').innerHTML = ans
+      .map((w, i) => `<button class="wb-tile" data-where="ans" data-i="${i}">${w}</button>`)
+      .join('');
+    $('#wb-bank').innerHTML = bank
+      .map((w, i) => `<button class="wb-tile" data-where="bank" data-i="${i}">${w}</button>`)
+      .join('');
+    $('#wb-check').disabled = ans.length === 0;
+    $$('#card-area .wb-tile').forEach((t) =>
+      t.addEventListener('click', () => {
+        haptic(8);
+        const i = +t.dataset.i;
+        if (t.dataset.where === 'bank') { ans.push(bank[i]); bank.splice(i, 1); }
+        else { bank.push(ans[i]); ans.splice(i, 1); }
+        draw();
+      })
+    );
+  }
+  draw();
+
+  $('#wb-check').addEventListener('click', () => {
+    const correct = ans.join(' ').toLowerCase() === target.join(' ').toLowerCase();
+    $('#wb-check').style.display = 'none';
+    objectiveFeedback(card, correct);
+    Speech.speak(card.en);
+  });
+}
+
+// Shared feedback + continue for objective exercises (listen/wordbank).
+function objectiveFeedback(card, correct) {
+  haptic(correct ? 30 : 12);
+  const fb = $('#ex-fb');
+  fb.hidden = false;
+  fb.className = 'ex-feedback ' + (correct ? 'good' : 'bad');
+  fb.innerHTML = `${correct ? '🌟 정답!' : '💪 아쉬워요'} <b>${card.en}</b><br><span>${card.ko}</span>`;
+  const wrap = $('#continue-wrap');
+  wrap.hidden = false;
+  $('#btn-continue').addEventListener('click', () => gradeCard(card, correct ? 'good' : 'again'));
+  wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// Reveal the self-assessment buttons (and any hidden answer) after practice.
 function revealGrade() {
+  const ans = $('#hidden-answer');
+  if (ans) ans.hidden = false;
   $('#grade-prompt').hidden = false;
   $('#grade-row').hidden = false;
   $('#grade-row').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
