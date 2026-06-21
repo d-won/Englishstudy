@@ -93,11 +93,14 @@ function review(id, grade) {
   return c;
 }
 
-/** Cards whose due time has passed, soonest-first. */
+/** Cards already studied whose due time has passed, soonest-first.
+ * (Only counts cards with a real SRS entry — brand-new cards are "new", not "due".) */
 function getDueCards(deck) {
   const now = Date.now();
+  const s = loadSrs();
   return deck
-    .map((card) => ({ card, state: getCardState(card.id) }))
+    .filter((card) => s[card.id])
+    .map((card) => ({ card, state: s[card.id] }))
     .filter((x) => x.state.due <= now)
     .sort((a, b) => a.state.due - b.state.due);
 }

@@ -99,41 +99,61 @@ function renderCatStrip(g) {
 // Beginner speaking focus: lead with 기초(level 1) and sprinkle 중급(level 2),
 // roughly 3 basics to every 1 intermediate card.
 const BASICS_PER_INTER = 3;
+const LESSON_CARDS = 5; // distinct expressions taught/reviewed per session
+
+// A session returns ENTRIES {card, type}. type === null → pick automatically
+// (retrieval for seen cards). New cards are taught (teach) AND then re-tested
+// later in the SAME session (study-then-test = immediate retrieval practice),
+// so variety shows from session one instead of waiting for SRS to come due.
+function pickRetrieval(card) {
+  const pool = ['recall', 'listen'];
+  const wc = enWords(card).length;
+  if (wc >= 3 && wc <= 7) pool.push('wordbank');
+  return pool[Math.floor(Math.random() * pool.length)];
+}
 
 function buildQueue(catFilter) {
   let pool = DECK;
   if (catFilter) pool = DECK.filter((d) => d.cat === catFilter);
 
-  const due = SRS.getDueCards(pool).map((x) => x.card);
-  const fresh = SRS.getNewCards(pool);
-  // Candidate order: review what's due first, then introduce new cards.
-  const ordered = [...due, ...fresh];
+  const seen = SRS.loadSrs();
+  const due = SRS.getDueCards(pool).map((x) => x.card); // studied + due (→ retrieval)
+  const fresh = SRS.getNewCards(pool); // brand new (→ teach, then retest)
 
-  // Category-filtered session: just take them in order.
+  // Pick the distinct expressions for this lesson.
+  let lesson;
   if (catFilter) {
-    const q = ordered.slice(0, SESSION_TARGET);
-    return q.length
-      ? q
-      : [...pool].sort(() => Math.random() - 0.5).slice(0, SESSION_TARGET);
+    lesson = [...due, ...fresh].slice(0, LESSON_CARDS);
+  } else {
+    const ordered = [...due, ...fresh];
+    const basics = ordered.filter((c) => c.level === 1);
+    const inter = ordered.filter((c) => c.level !== 1);
+    lesson = [];
+    let bi = 0;
+    let ii = 0;
+    while (lesson.length < LESSON_CARDS && (bi < basics.length || ii < inter.length)) {
+      for (let k = 0; k < BASICS_PER_INTER && bi < basics.length && lesson.length < LESSON_CARDS; k++) {
+        lesson.push(basics[bi++]);
+      }
+      if (ii < inter.length && lesson.length < LESSON_CARDS) lesson.push(inter[ii++]);
+      if (bi >= basics.length && ii >= inter.length) break;
+    }
+  }
+  if (lesson.length === 0) {
+    lesson = [...pool].sort(() => Math.random() - 0.5).slice(0, LESSON_CARDS);
   }
 
-  // Mixed session: interleave basics and intermediate by level.
-  const basics = ordered.filter((c) => c.level === 1);
-  const inter = ordered.filter((c) => c.level !== 1);
-  const queue = [];
-  let bi = 0;
-  let ii = 0;
-  while (queue.length < SESSION_TARGET && (bi < basics.length || ii < inter.length)) {
-    for (let k = 0; k < BASICS_PER_INTER && bi < basics.length && queue.length < SESSION_TARGET; k++) {
-      queue.push(basics[bi++]);
-    }
-    if (ii < inter.length && queue.length < SESSION_TARGET) queue.push(inter[ii++]);
-    if (bi >= basics.length && ii >= inter.length) break;
-  }
-  if (queue.length === 0) {
-    queue.push(...[...pool].sort(() => Math.random() - 0.5).slice(0, SESSION_TARGET));
-  }
-  return queue;
+  // Lesson phase: teach new, retrieval for already-seen.
+  const entries = lesson.map((card) => ({
+    card,
+    type: seen[card.id] ? null : 'teach',
+  }));
+  // Test phase: immediately re-test the new cards we just taught.
+  lesson
+    .filter((card) => !seen[card.id])
+    .forEach((card) => entries.push({ card, type: pickRetrieval(card) }));
+
+  return entries;
 }
 
 function startSession(catFilter) {
@@ -215,10 +235,11 @@ function chooseExercise(card) {
 }
 
 function renderCard() {
-  const card = state.queue[state.idx];
+  const entry = state.queue[state.idx];
+  const card = entry.card;
   state.spokeThisCard = false;
   updateProgressCombo();
-  const type = chooseExercise(card);
+  const type = entry.type || chooseExercise(card);
   ({
     teach: renderTeach,
     recall: renderRecall,
