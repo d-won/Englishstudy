@@ -488,12 +488,45 @@ function scheduleNextReminder() {
 }
 
 // ----------------------------- PWA install -----------------------------
+// Android/Chrome fires beforeinstallprompt → we can show a 1-tap install.
+// iOS Safari does NOT support programmatic install, so we show manual steps.
 let deferredPrompt = null;
+
+function isStandalone() {
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true
+  );
+}
+function isIOS() {
+  return (
+    /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  );
+}
+
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
+  $('#install-text').textContent = '📲 홈 화면에 추가하면 앱처럼 쓸 수 있어요';
+  $('#btn-install').textContent = '설치';
   $('#install-hint').hidden = false;
 });
+
+function setupInstall() {
+  // Already installed → nothing to nag about.
+  if (isStandalone()) {
+    $('#install-hint').hidden = true;
+    return;
+  }
+  // iOS can't auto-install; show manual guidance instead of a dead button.
+  if (isIOS()) {
+    $('#install-text').innerHTML = '📲 앱처럼 쓰려면 <b>공유 ⬆️ → 홈 화면에 추가</b>';
+    $('#btn-install').textContent = '방법 보기';
+    $('#install-hint').hidden = false;
+  }
+  // Other browsers: wait for beforeinstallprompt (hint stays hidden until then).
+}
 
 // ----------------------------- wire up -----------------------------
 function bindEvents() {
@@ -526,17 +559,27 @@ function bindEvents() {
   });
   $('#btn-notify').addEventListener('click', enableNotifications);
   $('#btn-install').addEventListener('click', async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
-    deferredPrompt = null;
-    $('#install-hint').hidden = true;
+    if (deferredPrompt) {
+      // Android/Chrome: native install prompt.
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      $('#install-hint').hidden = true;
+    } else {
+      // iOS / unsupported: open the manual how-to.
+      $('#ios-install').hidden = false;
+    }
+  });
+  $('#ios-x').addEventListener('click', () => ($('#ios-install').hidden = true));
+  $('#ios-install').addEventListener('click', (e) => {
+    if (e.target.id === 'ios-install') $('#ios-install').hidden = true;
   });
 }
 
 function init() {
   bindEvents();
   renderHome();
+  setupInstall();
   if (Notification?.permission === 'granted') scheduleNextReminder();
 
   // register service worker
