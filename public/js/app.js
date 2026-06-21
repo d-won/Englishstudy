@@ -689,11 +689,27 @@ function init() {
   if (!localStorage.getItem('es_seen_help')) openHelp();
   if (Notification?.permission === 'granted') scheduleNextReminder();
 
-  // register service worker
+  // register service worker + auto-update.
+  // updateViaCache:'none' → browser always re-checks sw.js (so version bumps
+  // are seen immediately). When a new SW takes control, reload once so the
+  // freshly-cached HTML/JS actually shows (fixes "installed PWA looks the same").
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').catch((e) =>
-      console.warn('SW registration failed', e)
-    );
+    let reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloaded) return;
+      reloaded = true;
+      location.reload();
+    });
+    navigator.serviceWorker
+      .register('sw.js', { updateViaCache: 'none' })
+      .then((reg) => {
+        reg.update();
+        // check for updates whenever the app regains focus
+        document.addEventListener('visibilitychange', () => {
+          if (!document.hidden) reg.update();
+        });
+      })
+      .catch((e) => console.warn('SW registration failed', e));
   }
 }
 
