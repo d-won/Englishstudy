@@ -22,7 +22,10 @@
       <section id="screen-home" class="screen active">
         <header class="app-bar">
           <div class="brand">회화<span>한입</span> 🍱</div>
-          <button id="btn-profile" class="icon-btn" aria-label="프로필">👤</button>
+          <div class="app-bar-actions">
+            <button id="btn-help" class="icon-btn" aria-label="사용법">❓</button>
+            <button id="btn-profile" class="icon-btn" aria-label="프로필">👤</button>
+          </div>
         </header>
 
         <div class="hero-stats">
@@ -69,6 +72,39 @@
           <button id="btn-install">설치</button>
         </div>
       </section>
+
+      <!-- 사용법(도움말) 모달 -->
+      <div id="help-modal" class="modal" hidden>
+        <div class="modal-card">
+          <button class="modal-x" id="help-x" aria-label="닫기">✕</button>
+          <h3>🍱 회화한입 사용법</h3>
+          <p class="help-lead">머리로 외우는 게 아니라 <b>입으로 소리 내어 말하는</b> 앱이에요. 하루 1분씩, 여러 번!</p>
+
+          <ol class="help-steps">
+            <li><b>▶ 오늘의 한입 시작</b> 을 누르면 카드가 한 장씩 나와요.</li>
+            <li>카드에서 이렇게 연습해요:
+              <ul>
+                <li>🔊 <b>듣기</b> — 원어민 발음 (자동으로도 한 번 재생돼요)</li>
+                <li>🎙️ <b>따라 말하기</b> — 소리 내어 따라 하면 점수가 나와요<br>
+                  <span class="help-dim">(아이폰은 음성인식이 안 될 수 있어요 → ✅ <b>“말했어요”</b> 버튼으로 대체)</span></li>
+                <li>🔁 <b>단어만 바꿔 말하기</b> — 변형 문장도 소리 내어 따라 말해요 (핵심!)</li>
+                <li>💡 <b>팁·예문</b> — 눌러서 추가 설명 보기</li>
+              </ul>
+            </li>
+            <li>다 말했으면 아래에서 <b>스스로 평가</b>:
+              😵 못했어 / 😣 더듬더듬 / 🙂 말했어 / 😎 술술<br>
+              <span class="help-dim">→ 이걸로 복습 주기가 정해져요. 어려우면 더 자주, 잘하면 가끔 다시 나와요.</span></li>
+            <li>🔥 <b>스트릭</b>(연속 출석) · <b>XP/레벨</b> · <b>콤보</b> · <b>업적</b> 으로 재미있게!</li>
+          </ol>
+
+          <div class="help-extra">
+            <p>🧱 기초 · 🎤 코미디 · 🏛️ 정치 · 📈 경제 — <b>분야를 골라서</b>도 연습할 수 있어요.</p>
+            <p>🔔 <b>알림</b> 을 켜면 잊을 때쯤 알려줘요. 👤 <b>프로필</b> 에서 기록과 하루 목표를 볼 수 있어요.</p>
+          </div>
+
+          <button class="cta" id="help-start">알겠어요, 시작! 🚀</button>
+        </div>
+      </div>
 
       <!-- iOS 설치 안내 모달 -->
       <div id="ios-install" class="modal" hidden>

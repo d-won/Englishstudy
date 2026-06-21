@@ -528,9 +528,27 @@ function setupInstall() {
   // Other browsers: wait for beforeinstallprompt (hint stays hidden until then).
 }
 
+// ----------------------------- help / how-to -----------------------------
+function openHelp() {
+  $('#help-modal').hidden = false;
+}
+function closeHelp() {
+  $('#help-modal').hidden = true;
+  localStorage.setItem('es_seen_help', '1');
+}
+
 // ----------------------------- wire up -----------------------------
 function bindEvents() {
   $('#btn-start').addEventListener('click', () => startSession(null));
+  $('#btn-help').addEventListener('click', openHelp);
+  $('#help-x').addEventListener('click', closeHelp);
+  $('#help-start').addEventListener('click', () => {
+    closeHelp();
+    startSession(null);
+  });
+  $('#help-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'help-modal') closeHelp();
+  });
   $('#btn-browse').addEventListener('click', () => {
     renderBrowse();
     show('screen-browse');
@@ -580,6 +598,8 @@ function init() {
   bindEvents();
   renderHome();
   setupInstall();
+  // First launch → show the how-to once.
+  if (!localStorage.getItem('es_seen_help')) openHelp();
   if (Notification?.permission === 'granted') scheduleNextReminder();
 
   // register service worker
