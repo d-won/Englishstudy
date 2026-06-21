@@ -61,6 +61,11 @@
           <span class="cta-sub" id="cta-sub">복습 0 · 신규 0 · 약 1분</span>
         </button>
 
+        <button id="btn-chat" class="cta cta-chat">
+          <span class="cta-main">🤖 AI와 영어로 수다 떨기</span>
+          <span class="cta-sub">배운 표현으로 실제 대화 연습 (Stage 2)</span>
+        </button>
+
         <div class="home-actions">
           <button class="ghost-btn" id="btn-browse">📚 표현 둘러보기</button>
           <button class="ghost-btn" id="btn-notify">🔔 알림 켜기</button>
@@ -148,6 +153,22 @@
         </header>
         <div class="profile-body" id="profile-body"></div>
       </section>
+
+      <!-- ───────────── AI CHAT (Stage 2) ───────────── -->
+      <section id="screen-chat" class="screen">
+        <header class="app-bar">
+          <button class="icon-btn" id="btn-chat-back">←</button>
+          <div class="title" id="chat-title">AI 대화</div>
+          <button class="icon-btn" id="btn-chat-settings" aria-label="설정">⚙️</button>
+        </header>
+        <div class="chat-body" id="chat-body"><!-- topic picker or messages --></div>
+        <div class="chat-input-bar" id="chat-input-bar" hidden>
+          <button class="chat-mic" id="chat-mic" aria-label="말하기">🎙️</button>
+          <input id="chat-input" class="chat-input" type="text"
+                 placeholder="영어로 입력하거나 🎙️ 누르고 말하세요" autocomplete="off" />
+          <button class="chat-send" id="chat-send">보내기</button>
+        </div>
+      </section>
     </div>
 
     <div id="toast" class="toast" hidden></div>
@@ -157,5 +178,6 @@
     <script src="js/game.js"></script>
     <script src="js/speech.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/chat.js"></script>
   </body>
 </html>

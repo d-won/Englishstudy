@@ -1,6 +1,6 @@
 /* Service worker: offline shell + notification handling.
  * Bump CACHE when you change cached assets. */
-const CACHE = 'hoehwa-hanip-v6';
+const CACHE = 'hoehwa-hanip-v7';
 const ASSETS = [
   './',
   './index.html',
@@ -10,6 +10,7 @@ const ASSETS = [
   './js/game.js',
   './js/speech.js',
   './js/app.js',
+  './js/chat.js',
   './manifest.json',
   './icons/icon.svg',
   './icons/icon-192.png',

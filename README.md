@@ -55,11 +55,32 @@ public/
 `public/js/data.js` 의 `DECK` 배열에 카드를 추가하면 끝.
 새 분야가 필요하면 `CATEGORIES`에 항목을 추가하세요.
 
-## 로드맵
+## Stage 2 — AI 대화 파트너 (Claude API) ✅ 구현됨
 
-- **Stage 2 — AI 대화 파트너 (Claude API)**
-  `server.js`의 `/api/chat`를 구현하고 `ANTHROPIC_API_KEY`를 설정하면
-  학습한 표현을 실제 상황에서 자유 대화로 연습할 수 있게 확장합니다.
+`🤖 AI와 영어로 수다 떨기` 버튼으로 진입. 주제(기초/코미디/정치/경제/일상)를 고르면
+AI가 쉬운 영어로 말을 걸고, 사용자의 답을 부드럽게 교정(✏️)해 줍니다. 🎙️로 말하기도 가능.
+
+서버(`/api/chat`)가 **Claude API**(`@anthropic-ai/sdk`)를 호출하므로 **API 키는 서버에만** 보관됩니다.
+GitHub Pages(정적)에는 서버가 없으니, AI 대화를 쓰려면 아래처럼 **앱을 서버로 배포**하세요.
+
+### 배포 (Render 예시 — 폰만으로 가능)
+1. [render.com](https://render.com) 가입 → **New → Web Service** → 이 GitHub 저장소 연결
+2. Build Command: `npm install` · Start Command: `npm start`
+3. **Environment** 에 추가:
+   - `ANTHROPIC_API_KEY` = `sk-ant-...` (필수)
+   - (선택) `CHAT_MODEL` = `claude-haiku-4-5` — 비용/속도 절감 (기본은 `claude-opus-4-8`)
+   - (선택) `ALLOWED_ORIGIN` = `https://d-won.github.io` — CORS 제한
+   - (선택) `APP_SECRET` = 임의 문자열 — 무단 사용 방지(앱 ⚙️에 같은 값 입력)
+4. 배포된 `https://<your-app>.onrender.com` 을 폰에서 열면 카드 학습 + AI 대화가 **그 주소 하나로** 다 됩니다.
+
+### GitHub Pages를 계속 쓰면서 AI만 붙이기
+Pages(`d-won.github.io`)에서 열고, AI 대화 화면의 **⚙️ → 서버 주소**에 위 Render 주소를 입력하면
+정적 PWA가 그 서버의 `/api/chat`을 호출합니다. (이 경우 서버에 `ALLOWED_ORIGIN`/`APP_SECRET` 설정 권장)
+
+> 로컬 테스트: `ANTHROPIC_API_KEY=sk-ant-... npm start` 후 `http://localhost:3000`.
+
+## 로드맵 (다음)
+
 - **진짜 푸시 알림** — 현재 리마인더는 앱이 살아있을 때 동작하는 로컬 알림입니다.
   앱이 닫혀 있어도 하루 여러 번 알리려면 VAPID 기반 Web Push(서버) + 구독 저장이 필요합니다.
 - **클라우드 동기화** — localStorage → 계정/DB 로 이전(기기 간 진행 동기화).
