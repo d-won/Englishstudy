@@ -63,7 +63,15 @@ AI가 쉬운 영어로 말을 걸고, 사용자의 답을 부드럽게 교정(�
 서버(`/api/chat`)가 **Claude API**(`@anthropic-ai/sdk`)를 호출하므로 **API 키는 서버에만** 보관됩니다.
 GitHub Pages(정적)에는 서버가 없으니, AI 대화를 쓰려면 아래처럼 **앱을 서버로 배포**하세요.
 
-### 배포 (Render 예시 — 폰만으로 가능)
+### 가장 쉬운 방법 — 앱에 API 키만 붙여넣기 (서버 배포 X)
+배포가 부담되면, **개인용**으로는 이게 제일 빨라요. GitHub Pages 주소에서 바로 됩니다.
+1. [console.anthropic.com](https://console.anthropic.com) → **API Keys** 에서 키 발급 (`sk-ant-...`, 소액 유료)
+2. 앱 → 🤖 AI 대화 → **⚙️** → "쉬운 방법"에 키 붙여넣고 모델 선택(회화는 `haiku` 추천) → 저장
+3. 끝. 키는 **이 기기(localStorage)에만** 저장되고 Anthropic으로만 전송돼요.
+   > 보안: 키는 비밀번호와 같아요. 공유 금지, 콘솔에서 사용 한도 설정 권장. 공용 기기에선 비권장(서버 방법 사용).
+
+### 제대로 — 서버로 배포 (Render 예시, 폰만으로 가능)
+
 1. [render.com](https://render.com) 가입 → **New → Web Service** → 이 GitHub 저장소 연결
 2. Build Command: `npm install` · Start Command: `npm start`
 3. **Environment** 에 추가:

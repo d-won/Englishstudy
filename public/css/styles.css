@@ -1127,6 +1127,89 @@ body {
   font-size: 0.78rem;
 }
 
+/* "need key" banner */
+.chat-needkey {
+  background: rgba(0, 184, 169, 0.15);
+  border: 1px solid rgba(0, 184, 169, 0.4);
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-size: 0.9rem;
+  margin: 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.chat-needkey button {
+  margin-left: auto;
+  background: #00b8a9;
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* settings panel */
+.chat-settings {
+  padding: 8px 2px 20px;
+}
+.cs-card {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.cs-card h3 {
+  margin: 0 0 6px;
+}
+.cs-card summary {
+  font-weight: 700;
+  cursor: pointer;
+}
+.cs-sub {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin: 6px 0 12px;
+}
+.cs-card label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.cs-card input,
+.cs-card select {
+  width: 100%;
+  margin-top: 6px;
+  background: var(--bg2);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text);
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 1rem;
+}
+.cs-hint {
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  margin: 0;
+}
+.cs-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+.cs-warn {
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  margin-top: 14px;
+}
+
 /* toast */
 .toast {
   position: fixed;
